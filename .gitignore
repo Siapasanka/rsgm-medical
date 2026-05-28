@@ -1,0 +1,42 @@
+# OS / logs
+*.log
+.DS_Store
+Thumbs.db
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+!.env.production.example
+.env.backup
+.env.production
+
+# PHP / Laravel caches
+.phpactor.json
+.phpunit.result.cache
+/.phpunit.cache
+/storage/*.key
+/storage/pail
+
+# IDEs / editors
+/.fleet
+/.idea
+/.nova
+/.vscode
+/.zed
+
+# Auth / local config
+/auth.json
+Homestead.json
+Homestead.yaml
+
+# Dependencies
+/node_modules
+/vendor
+
+# Frontend build artifacts
+/public/build
+/public/hot
+
+# Storage symlink target (generated)
+/public/storage

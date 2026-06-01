@@ -18,14 +18,10 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Read-only akses pasien untuk superadmin/admin/petugas
-    Route::middleware('role:superadmin,admin,petugas')->group(function () {
+    // Akses pasien untuk superadmin/admin/dokter
+    Route::middleware('role:superadmin,admin,dokter')->group(function () {
         Route::get('patients', [PatientController::class, 'index'])->name('patients.index');
         Route::get('patients/{patient}', [PatientController::class, 'show'])->whereNumber('patient')->name('patients.show');
-    });
-
-    // Mutasi data pasien hanya untuk petugas
-    Route::middleware('role:petugas')->group(function () {
         Route::get('patients/create', [PatientController::class, 'create'])->name('patients.create');
         Route::post('patients', [PatientController::class, 'store'])->name('patients.store');
         Route::get('patients/{patient}/edit', [PatientController::class, 'edit'])->whereNumber('patient')->name('patients.edit');
@@ -33,13 +29,11 @@ Route::middleware('auth')->group(function () {
         Route::delete('patients/{patient}', [PatientController::class, 'destroy'])->whereNumber('patient')->name('patients.destroy');
     });
 
-    Route::middleware('role:petugas')->group(function () {
+    Route::middleware('role:dokter')->group(function () {
         Route::resource('registrations', RegistrationController::class);
         Route::get('registrations/export/daily-pdf', [RegistrationController::class, 'exportDailyPdf'])
             ->name('registrations.export.daily-pdf');
-    });
 
-    Route::middleware('role:dokter')->group(function () {
         Route::resource('medical-records', MedicalRecordController::class);
         Route::delete('medical-records/{medical_record}/photos/{photo}', [MedicalRecordController::class, 'destroyPhoto'])
             ->name('medical-records.photos.destroy');

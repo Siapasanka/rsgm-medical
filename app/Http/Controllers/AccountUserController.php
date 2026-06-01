@@ -119,8 +119,8 @@ class AccountUserController extends Controller
     private function manageableRoles(): array
     {
         return auth()->user()?->role?->name === 'superadmin'
-            ? ['admin', 'dokter', 'petugas']
-            : ['dokter', 'petugas'];
+            ? ['admin', 'dokter']
+            : ['dokter'];
     }
 
     private function ensureManageableRole(User $user): void

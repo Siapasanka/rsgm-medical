@@ -14,7 +14,6 @@ class RoleAndUserSeeder extends Seeder
         $superadminRole = Role::firstOrCreate(['name' => 'superadmin']);
         $adminRole = Role::firstOrCreate(['name' => 'admin']);
         $dokterRole = Role::firstOrCreate(['name' => 'dokter']);
-        $petugasRole = Role::firstOrCreate(['name' => 'petugas']);
 
         User::updateOrCreate(
             ['username' => 'superadmin'],
@@ -43,13 +42,5 @@ class RoleAndUserSeeder extends Seeder
             ]
         );
 
-        User::updateOrCreate(
-            ['username' => 'petugas'],
-            [
-                'name' => 'Petugas RSGM',
-                'password' => Hash::make('petugas12345'),
-                'role_id' => $petugasRole->id,
-            ]
-        );
     }
 }

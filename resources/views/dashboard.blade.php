@@ -22,15 +22,13 @@
                 <div class="lg:col-span-4">
                     @if(in_array($role, ['superadmin', 'admin']))
                         @include('dashboard.partials.recent-activities')
-                    @elseif($role === 'petugas')
-                        @include('dashboard.partials.quick-actions')
                     @elseif($role === 'dokter')
                         @include('dashboard.partials.doctor-recent-records')
                     @endif
                 </div>
             </div>
 
-            @if(in_array($role, ['superadmin', 'admin', 'petugas']))
+            @if(in_array($role, ['superadmin', 'admin', 'dokter']))
                 @include('dashboard.partials.trend-7days')
             @endif
         </div>

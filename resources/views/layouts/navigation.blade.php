@@ -3,7 +3,6 @@
     $roleLabel = match($role) {
         'superadmin' => 'Super Admin',
         'admin' => 'Admin',
-        'petugas' => 'Petugas',
         'dokter' => 'Dokter',
         default => $role ? ucfirst($role) : null,
     };
@@ -27,19 +26,17 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
 
-                    @if(in_array($role, ['superadmin', 'admin', 'petugas']))
+                    @if(in_array($role, ['superadmin', 'admin', 'dokter']))
                         <x-nav-link :href="route('patients.index')" :active="request()->routeIs('patients.*')">
                             {{ __('Pasien') }}
                         </x-nav-link>
                     @endif
 
-                    @if($role === 'petugas')
+                    @if($role === 'dokter')
                         <x-nav-link :href="route('registrations.index')" :active="request()->routeIs('registrations.*')">
                             {{ __('Pendaftaran') }}
                         </x-nav-link>
-                    @endif
 
-                    @if($role === 'dokter')
                         <x-nav-link :href="route('medical-records.index')" :active="request()->routeIs('medical-records.*')">
                             {{ __('Rekam Medis') }}
                         </x-nav-link>
@@ -51,7 +48,7 @@
                         </x-nav-link>
 
                         <x-nav-link :href="route('account-users.index')" :active="request()->routeIs('account-users.*')">
-                            {{ __('Akun Dokter/Petugas') }}
+                            {{ __('Akun Dokter') }}
                         </x-nav-link>
                     @endif
                 </div>
@@ -108,19 +105,17 @@
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
 
-            @if(in_array($role, ['superadmin', 'admin', 'petugas']))
+            @if(in_array($role, ['superadmin', 'admin', 'dokter']))
                 <x-responsive-nav-link :href="route('patients.index')" :active="request()->routeIs('patients.*')">
                     {{ __('Pasien') }}
                 </x-responsive-nav-link>
             @endif
 
-            @if($role === 'petugas')
+            @if($role === 'dokter')
                 <x-responsive-nav-link :href="route('registrations.index')" :active="request()->routeIs('registrations.*')">
                     {{ __('Pendaftaran') }}
                 </x-responsive-nav-link>
-            @endif
 
-            @if($role === 'dokter')
                 <x-responsive-nav-link :href="route('medical-records.index')" :active="request()->routeIs('medical-records.*')">
                     {{ __('Rekam Medis') }}
                 </x-responsive-nav-link>
@@ -132,7 +127,7 @@
                 </x-responsive-nav-link>
 
                 <x-responsive-nav-link :href="route('account-users.index')" :active="request()->routeIs('account-users.*')">
-                    {{ __('Akun Dokter/Petugas') }}
+                    {{ __('Akun Dokter') }}
                 </x-responsive-nav-link>
             @endif
         </div>

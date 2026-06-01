@@ -16,7 +16,7 @@ class DashboardController extends Controller
         $role = $user?->role?->name;
         $today = now()->toDateString();
 
-        if (!in_array($role, ['superadmin', 'admin', 'petugas', 'dokter'])) {
+        if (!in_array($role, ['superadmin', 'admin', 'dokter'])) {
             abort(403, 'Role belum diatur. Hubungi admin.');
         }
 

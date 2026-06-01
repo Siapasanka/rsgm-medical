@@ -27,10 +27,12 @@
                         </button>
                     </form>
 
-                    <a href="{{ route('patients.create') }}"
-                       class="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded">
-                        + Tambah Pasien
-                    </a>
+                    @if(auth()->user()?->role?->name === 'dokter')
+                        <a href="{{ route('patients.create') }}"
+                           class="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded">
+                            + Tambah Pasien
+                        </a>
+                    @endif
                 </div>
 
                 <div class="overflow-x-auto">

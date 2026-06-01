@@ -56,13 +56,16 @@
                                     <td class="border px-3 py-2">{{ $patient->jenis_kelamin }}</td>
                                     <td class="border px-3 py-2">{{ $patient->no_hp }}</td>
                                     <td class="border px-3 py-2">
-                                        <a href="{{ route('patients.show', $patient) }}" class="text-blue-600">Detail</a> |
-                                        <a href="{{ route('patients.edit', $patient) }}" class="text-yellow-600">Edit</a> |
-                                        <form action="{{ route('patients.destroy', $patient) }}" method="POST" class="inline" data-confirm="Yakin hapus data?">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-red-600">Hapus</button>
-                                        </form>
+                                        <a href="{{ route('patients.show', $patient) }}" class="text-blue-600">Detail</a>
+
+                                        @if(auth()->user()?->role?->name === 'dokter')
+                                            | <a href="{{ route('patients.edit', $patient) }}" class="text-yellow-600">Edit</a> |
+                                            <form action="{{ route('patients.destroy', $patient) }}" method="POST" class="inline" data-confirm="Yakin hapus data?">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-red-600">Hapus</button>
+                                            </form>
+                                        @endif
                                     </td>
                                 </tr>
                             @empty

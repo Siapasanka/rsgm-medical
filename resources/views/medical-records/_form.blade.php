@@ -26,36 +26,36 @@
 
     <div class="md:col-span-2">
         <x-input-label for="anamnesis" value="Anamnesis" />
-        <textarea id="anamnesis" name="anamnesis" rows="3" class="mt-1 block w-full border-gray-300 rounded-md">{{ old('anamnesis', $record->anamnesis ?? '') }}</textarea>
+        <textarea id="anamnesis" name="anamnesis" rows="3" class="mt-1 block w-full border-gray-300 rounded-md" required>{{ old('anamnesis', $record->anamnesis ?? '') }}</textarea >
         <x-input-error :messages="$errors->get('anamnesis')" class="mt-2" />
     </div>
 
     <div class="md:col-span-2">
         <x-input-label for="pemeriksaan_fisik" value="Pemeriksaan Fisik" />
-        <textarea id="pemeriksaan_fisik" name="pemeriksaan_fisik" rows="3" class="mt-1 block w-full border-gray-300 rounded-md">{{ old('pemeriksaan_fisik', $record->pemeriksaan_fisik ?? '') }}</textarea>
+        <textarea id="pemeriksaan_fisik" name="pemeriksaan_fisik" rows="3" class="mt-1 block w-full border-gray-300 rounded-md" required>{{ old('pemeriksaan_fisik', $record->pemeriksaan_fisik ?? '') }}</textarea>
         <x-input-error :messages="$errors->get('pemeriksaan_fisik')" class="mt-2" />
     </div>
 
     <div>
         <x-input-label for="diagnosis" value="Diagnosis" />
-        <textarea id="diagnosis" name="diagnosis" rows="3" class="mt-1 block w-full border-gray-300 rounded-md">{{ old('diagnosis', $record->diagnosis ?? '') }}</textarea>
+        <textarea id="diagnosis" name="diagnosis" rows="3" class="mt-1 block w-full border-gray-300 rounded-md" required>{{ old('diagnosis', $record->diagnosis ?? '') }}</textarea>
         <x-input-error :messages="$errors->get('diagnosis')" class="mt-2" />
     </div>
 
     <div>
         <x-input-label for="tindakan" value="Tindakan" />
-        <textarea id="tindakan" name="tindakan" rows="3" class="mt-1 block w-full border-gray-300 rounded-md">{{ old('tindakan', $record->tindakan ?? '') }}</textarea>
+        <textarea id="tindakan" name="tindakan" rows="3" class="mt-1 block w-full border-gray-300 rounded-md" required>{{ old('tindakan', $record->tindakan ?? '') }}</textarea>
         <x-input-error :messages="$errors->get('tindakan')" class="mt-2" />
     </div>
 
     <div>
-        <x-input-label for="resep" value="Resep" />
+        <x-input-label for="resep" value="Resep (opsional)" />
         <textarea id="resep" name="resep" rows="3" class="mt-1 block w-full border-gray-300 rounded-md">{{ old('resep', $record->resep ?? '') }}</textarea>
         <x-input-error :messages="$errors->get('resep')" class="mt-2" />
     </div>
 
     <div>
-        <x-input-label for="catatan" value="Catatan" />
+        <x-input-label for="catatan" value="Catatan (opsional)" />
         <textarea id="catatan" name="catatan" rows="3" class="mt-1 block w-full border-gray-300 rounded-md">{{ old('catatan', $record->catatan ?? '') }}</textarea>
         <x-input-error :messages="$errors->get('catatan')" class="mt-2" />
     </div>

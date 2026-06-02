@@ -42,7 +42,7 @@
     @endisset
 
     <div class="md:col-span-2">
-        <label>Keluhan Utama</label>
+        <label>Keluhan Utama (opsional)</label>
         <textarea name="keluhan_utama" class="w-full border rounded px-3 py-2">{{ old('keluhan_utama', $registration->keluhan_utama ?? '') }}</textarea>
     </div>
 </div>

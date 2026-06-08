@@ -1,6 +1,7 @@
 @php
     $record = $medicalRecord ?? null;
     $existingPhotoCount = $record?->photos?->count() ?? 0;
+    $isCreateForm = ! $record;
 @endphp
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -61,12 +62,12 @@
     </div>
 
     <div class="md:col-span-2">
-        <x-input-label for="photos" value="Upload Foto (opsional, bisa lebih dari 1)" />
-        <input type="file" id="photos" name="photos[]" multiple accept=".jpg,.jpeg,.png,.webp,image/*" class="mt-1 block w-full border-gray-300 rounded-md">
+        <x-input-label for="photos" value="Upload Foto (bisa lebih dari 1)" />
+        <input type="file" id="photos" name="photos[]" multiple accept=".jpg,.jpeg,.png,.webp,image/*" class="mt-1 block w-full border-gray-300 rounded-md" @required($isCreateForm)>
         <p class="text-xs text-gray-500 mt-1">
-            Maks 5 file tiap upload, maks 5 MB per foto (JPG, JPEG, PNG, WEBP).
+            Format foto: JPG, JPEG, PNG, WEBP.
             @if($record)
-                Foto tersimpan saat ini: {{ $existingPhotoCount }} (total maksimal 10 per rekam medis).
+                Foto tersimpan saat ini: {{ $existingPhotoCount }}.
             @endif
         </p>
         <x-input-error :messages="$errors->get('photos')" class="mt-2" />
@@ -90,15 +91,6 @@
 
         input.addEventListener('change', function () {
             const files = Array.from(input.files || []);
-            const maxFiles = 5;
-
-            if (files.length > maxFiles) {
-                alert('Maksimal 5 foto dalam sekali upload.');
-                input.value = '';
-                wrapper.classList.add('hidden');
-                grid.innerHTML = '';
-                return;
-            }
 
             grid.innerHTML = '';
 

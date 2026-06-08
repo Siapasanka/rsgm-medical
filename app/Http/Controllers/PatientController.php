@@ -37,13 +37,13 @@ class PatientController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nik' => ['required', 'string', 'max:30', 'unique:patients,nik'],
+            'nik' => ['required', 'digits:16', 'unique:patients,nik'],
             'nama' => ['required', 'string', 'max:255'],
             'tgl_lahir' => ['required', 'date'],
             'jenis_kelamin' => ['required', Rule::in(['L', 'P'])],
-            'alamat' => ['nullable', 'string'],
-            'no_hp' => ['nullable', 'string', 'max:20'],
-            'gol_darah' => ['nullable', 'string', 'max:3'],
+            'alamat' => ['required', 'string'],
+            'no_hp' => ['required', 'string', 'max:20'],
+            'gol_darah' => ['required', 'string', 'max:3'],
             'alergi' => ['nullable', 'string'],
         ]);
 
@@ -88,13 +88,13 @@ class PatientController extends Controller
     public function update(Request $request, Patient $patient)
     {
         $validated = $request->validate([
-            'nik' => ['required', 'string', 'max:30', Rule::unique('patients', 'nik')->ignore($patient->id)],
+            'nik' => ['required', 'digits:16', Rule::unique('patients', 'nik')->ignore($patient->id)],
             'nama' => ['required', 'string', 'max:255'],
             'tgl_lahir' => ['required', 'date'],
             'jenis_kelamin' => ['required', Rule::in(['L', 'P'])],
-            'alamat' => ['nullable', 'string'],
-            'no_hp' => ['nullable', 'string', 'max:20'],
-            'gol_darah' => ['nullable', 'string', 'max:3'],
+            'alamat' => ['required', 'string'],
+            'no_hp' => ['required', 'string', 'max:20'],
+            'gol_darah' => ['required', 'string', 'max:3'],
             'alergi' => ['nullable', 'string'],
         ]);
 

@@ -54,11 +54,10 @@ class MedicalRecordController extends Controller
             'tindakan' => ['nullable', 'string'],
             'resep' => ['nullable', 'string'],
             'catatan' => ['nullable', 'string'],
-            'photos' => ['nullable', 'array', 'max:5'],
-            'photos.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'photos' => ['required', 'array'],
+            'photos.*' => ['image', 'mimes:jpg,jpeg,png,webp'],
         ], [
-            'photos.max' => 'Maksimal upload 5 foto dalam satu kali simpan.',
-            'photos.*.max' => 'Ukuran tiap foto maksimal 5MB.',
+            'photos.required' => 'Foto wajib diupload.',
             'photos.*.mimes' => 'Format foto harus JPG, JPEG, PNG, atau WEBP.',
             'photos.*.image' => 'File yang diupload harus berupa gambar.',
         ]);
@@ -122,22 +121,12 @@ class MedicalRecordController extends Controller
             'tindakan' => ['nullable', 'string'],
             'resep' => ['nullable', 'string'],
             'catatan' => ['nullable', 'string'],
-            'photos' => ['nullable', 'array', 'max:5'],
-            'photos.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'photos' => ['nullable', 'array'],
+            'photos.*' => ['image', 'mimes:jpg,jpeg,png,webp'],
         ], [
-            'photos.max' => 'Maksimal upload 5 foto dalam satu kali simpan.',
-            'photos.*.max' => 'Ukuran tiap foto maksimal 5MB.',
             'photos.*.mimes' => 'Format foto harus JPG, JPEG, PNG, atau WEBP.',
             'photos.*.image' => 'File yang diupload harus berupa gambar.',
         ]);
-
-        $newPhotosCount = count($request->file('photos', []));
-        $currentPhotosCount = $medicalRecord->photos()->count();
-        if (($currentPhotosCount + $newPhotosCount) > 10) {
-            return back()
-                ->withErrors(['photos' => 'Total foto per rekam medis maksimal 10 file.'])
-                ->withInput();
-        }
 
         DB::transaction(function () use ($request, $validated, $medicalRecord) {
             $medicalRecord->update(collect($validated)->except(['photos'])->toArray());

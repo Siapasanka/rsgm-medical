@@ -17,6 +17,9 @@
                     </form>
 
                     <div class="flex gap-2">
+                        <a href="{{ route('medical-records.logs') }}" class="bg-gray-700 text-white px-4 py-2 rounded text-center">
+                            Log Rekam Medis
+                        </a>
                         <a href="{{ route('medical-records.export.daily-pdf', ['tanggal' => $tanggal]) }}" class="bg-green-600 text-white px-4 py-2 rounded text-center">
                             Print PDF Harian
                         </a>
@@ -48,7 +51,6 @@
                                 <th class="border px-3 py-2 text-left">No Antrian</th>
                                 <th class="border px-3 py-2 text-left">Pasien</th>
                                 <th class="border px-3 py-2 text-left">Dokter</th>
-                                <th class="border px-3 py-2 text-left">Foto</th>
                                 <th class="border px-3 py-2 text-left">Aksi</th>
                             </tr>
                         </thead>
@@ -59,14 +61,14 @@
                                     <td class="border px-3 py-2">{{ $record->registration->nomor_antrian }}</td>
                                     <td class="border px-3 py-2">{{ $record->registration->patient->nama ?? '-' }}</td>
                                     <td class="border px-3 py-2">{{ $record->doctor->name ?? '-' }}</td>
-                                    <td class="border px-3 py-2">{{ $record->photos->count() }}</td>
                                     <td class="border px-3 py-2">
                                         <a href="{{ route('medical-records.show', $record) }}" class="text-blue-600">Detail</a> |
-                                        <a href="{{ route('medical-records.edit', $record) }}" class="text-yellow-600">Edit</a>
+                                        <a href="{{ route('medical-records.edit', $record) }}" class="text-yellow-600">Edit</a> |
+                                        <a href="{{ route('medical-records.logs', ['record_id' => $record->id]) }}" class="text-gray-600">Log</a>
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="6" class="border px-3 py-4 text-center">Belum ada data rekam medis.</td></tr>
+                                <tr><td colspan="5" class="border px-3 py-4 text-center">Belum ada data rekam medis.</td></tr>
                             @endforelse
                         </tbody>
                     </table>

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditLog;
 use App\Models\MedicalRecord;
 use App\Models\MedicalRecordPhoto;
 use App\Models\Registration;
+use App\Models\User;
 use App\Support\Audit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +18,7 @@ class MedicalRecordController extends Controller
     {
         $tanggal = $request->query('tanggal', now()->toDateString());
 
-        $records = MedicalRecord::with(['registration.patient', 'doctor', 'photos'])
+        $records = MedicalRecord::with(['registration.patient', 'doctor'])
             ->whereHas('registration', fn ($q) => $q->whereDate('tanggal_kunjungan', $tanggal))
             ->latest()
             ->paginate(10)
@@ -29,6 +31,60 @@ class MedicalRecordController extends Controller
             ->get();
 
         return view('medical-records.index', compact('records', 'tanggal', 'registrationsWithoutRecord'));
+    }
+
+    public function logs(Request $request)
+    {
+        $filters = [
+            'q' => $request->query('q'),
+            'action' => $request->query('action'),
+            'userId' => $request->query('user_id'),
+            'dateFrom' => $request->query('date_from'),
+            'dateTo' => $request->query('date_to'),
+            'recordId' => $request->query('record_id'),
+        ];
+
+        $logs = AuditLog::with('user')
+            ->where('entity_type', 'medical_record')
+            ->whereIn('action', ['create', 'update'])
+            ->when($filters['recordId'], fn ($query) => $query->where('entity_id', $filters['recordId']))
+            ->when($filters['q'], function ($query) use ($filters) {
+                $q = $filters['q'];
+                $query->where(function ($sub) use ($q) {
+                    $sub->where('description', 'like', "%{$q}%")
+                        ->orWhere('metadata', 'like', "%{$q}%");
+
+                    if (is_numeric($q)) {
+                        $sub->orWhere('entity_id', $q);
+                    }
+                });
+            })
+            ->when($filters['action'], fn ($query) => $query->where('action', $filters['action']))
+            ->when($filters['userId'], fn ($query) => $query->where('user_id', $filters['userId']))
+            ->when($filters['dateFrom'], fn ($query) => $query->whereDate('created_at', '>=', $filters['dateFrom']))
+            ->when($filters['dateTo'], fn ($query) => $query->whereDate('created_at', '<=', $filters['dateTo']))
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
+
+        $recordIds = $logs->getCollection()
+            ->pluck('entity_id')
+            ->filter()
+            ->unique();
+
+        $recordsById = MedicalRecord::with(['registration.patient', 'doctor'])
+            ->whereIn('id', $recordIds)
+            ->get()
+            ->keyBy('id');
+
+        $users = User::orderBy('name')->get(['id', 'name']);
+
+        return view('medical-records.logs', [
+            ...$filters,
+            'logs' => $logs,
+            'recordsById' => $recordsById,
+            'users' => $users,
+        ]);
     }
 
     public function create(Request $request)
@@ -86,13 +142,21 @@ class MedicalRecordController extends Controller
 
             return $record;
         });
+        $record->load('registration.patient');
 
         Audit::log(
             action: 'create',
             entityType: 'medical_record',
             entityId: $record->id,
-            description: 'Membuat rekam medis untuk pendaftaran ID '.$record->registration_id,
-            metadata: ['jumlah_foto' => $record->photos()->count()]
+            description: 'Membuat rekam medis untuk '.$record->registration->patient->nama.' ('.$record->registration->patient->no_rm.') - pendaftaran #'.$record->registration->nomor_antrian,
+            metadata: [
+                'registration_id' => $record->registration_id,
+                'patient_id' => $record->registration->patient_id,
+                'patient_name' => $record->registration->patient->nama,
+                'patient_no_rm' => $record->registration->patient->no_rm,
+                'nomor_antrian' => $record->registration->nomor_antrian,
+                'jumlah_foto' => $record->photos()->count(),
+            ]
         );
 
         return redirect()->route('medical-records.index')->with('success', 'Rekam medis berhasil dibuat.');
@@ -128,8 +192,19 @@ class MedicalRecordController extends Controller
             'photos.*.image' => 'File yang diupload harus berupa gambar.',
         ]);
 
-        DB::transaction(function () use ($request, $validated, $medicalRecord) {
-            $medicalRecord->update(collect($validated)->except(['photos'])->toArray());
+        $recordData = collect($validated)->except(['photos'])->toArray();
+        $changes = collect($recordData)
+            ->filter(fn ($value, $field) => $medicalRecord->getOriginal($field) !== $value)
+            ->map(fn ($value, $field) => [
+                'before' => $medicalRecord->getOriginal($field),
+                'after' => $value,
+            ])
+            ->all();
+        $oldPhotoCount = $medicalRecord->photos()->count();
+        $addedPhotoCount = count($request->file('photos', []));
+
+        DB::transaction(function () use ($request, $recordData, $medicalRecord) {
+            $medicalRecord->update($recordData);
 
             if ($request->hasFile('photos')) {
                 foreach ($request->file('photos') as $photo) {
@@ -145,13 +220,24 @@ class MedicalRecordController extends Controller
                 }
             }
         });
+        $medicalRecord->load('registration.patient');
 
         Audit::log(
             action: 'update',
             entityType: 'medical_record',
             entityId: $medicalRecord->id,
-            description: 'Mengubah rekam medis ID '.$medicalRecord->id,
-            metadata: ['jumlah_foto' => $medicalRecord->photos()->count()]
+            description: 'Mengubah rekam medis untuk '.$medicalRecord->registration->patient->nama.' ('.$medicalRecord->registration->patient->no_rm.') - pendaftaran #'.$medicalRecord->registration->nomor_antrian,
+            metadata: [
+                'registration_id' => $medicalRecord->registration_id,
+                'patient_id' => $medicalRecord->registration->patient_id,
+                'patient_name' => $medicalRecord->registration->patient->nama,
+                'patient_no_rm' => $medicalRecord->registration->patient->no_rm,
+                'nomor_antrian' => $medicalRecord->registration->nomor_antrian,
+                'perubahan' => $changes,
+                'jumlah_foto_sebelum' => $oldPhotoCount,
+                'jumlah_foto_ditambah' => $addedPhotoCount,
+                'jumlah_foto' => $medicalRecord->photos()->count(),
+            ]
         );
 
         return redirect()->route('medical-records.show', $medicalRecord)->with('success', 'Rekam medis berhasil diupdate.');
@@ -159,8 +245,12 @@ class MedicalRecordController extends Controller
 
     public function destroy(MedicalRecord $medicalRecord)
     {
+        $medicalRecord->load('registration.patient');
         $id = $medicalRecord->id;
         $photoCount = $medicalRecord->photos()->count();
+        $patient = $medicalRecord->registration->patient;
+        $nomorAntrian = $medicalRecord->registration->nomor_antrian;
+        $registrationId = $medicalRecord->registration_id;
 
         foreach ($medicalRecord->photos as $photo) {
             Storage::disk('public')->delete($photo->file_path);
@@ -172,8 +262,15 @@ class MedicalRecordController extends Controller
             action: 'delete',
             entityType: 'medical_record',
             entityId: $id,
-            description: 'Menghapus rekam medis ID '.$id,
-            metadata: ['jumlah_foto_terhapus' => $photoCount]
+            description: 'Menghapus rekam medis untuk '.$patient->nama.' ('.$patient->no_rm.') - pendaftaran #'.$nomorAntrian,
+            metadata: [
+                'registration_id' => $registrationId,
+                'patient_id' => $patient->id,
+                'patient_name' => $patient->nama,
+                'patient_no_rm' => $patient->no_rm,
+                'nomor_antrian' => $nomorAntrian,
+                'jumlah_foto_terhapus' => $photoCount,
+            ]
         );
 
         return redirect()->route('medical-records.index')->with('success', 'Rekam medis berhasil dihapus.');
@@ -182,8 +279,10 @@ class MedicalRecordController extends Controller
     public function destroyPhoto(MedicalRecord $medicalRecord, MedicalRecordPhoto $photo)
     {
         abort_unless($photo->medical_record_id === $medicalRecord->id, 404);
+        $medicalRecord->load('registration.patient');
 
         $photoId = $photo->id;
+        $fileName = $photo->file_name;
         Storage::disk('public')->delete($photo->file_path);
         $photo->delete();
 
@@ -191,7 +290,14 @@ class MedicalRecordController extends Controller
             action: 'delete',
             entityType: 'medical_record_photo',
             entityId: $photoId,
-            description: 'Menghapus foto rekam medis ID '.$medicalRecord->id,
+            description: 'Menghapus foto rekam medis '.$fileName.' untuk '.$medicalRecord->registration->patient->nama.' ('.$medicalRecord->registration->patient->no_rm.')',
+            metadata: [
+                'medical_record_id' => $medicalRecord->id,
+                'patient_id' => $medicalRecord->registration->patient_id,
+                'patient_name' => $medicalRecord->registration->patient->nama,
+                'patient_no_rm' => $medicalRecord->registration->patient->no_rm,
+                'file_name' => $fileName,
+            ]
         );
 
         return back()->with('success', 'Foto berhasil dihapus.');

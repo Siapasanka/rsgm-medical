@@ -34,6 +34,8 @@ Route::middleware('auth')->group(function () {
         Route::get('registrations/export/daily-pdf', [RegistrationController::class, 'exportDailyPdf'])
             ->name('registrations.export.daily-pdf');
 
+        Route::get('medical-records/logs', [MedicalRecordController::class, 'logs'])
+            ->name('medical-records.logs');
         Route::resource('medical-records', MedicalRecordController::class);
         Route::delete('medical-records/{medical_record}/photos/{photo}', [MedicalRecordController::class, 'destroyPhoto'])
             ->name('medical-records.photos.destroy');

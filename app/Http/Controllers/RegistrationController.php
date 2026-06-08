@@ -48,13 +48,18 @@ class RegistrationController extends Controller
         $validated['created_by'] = auth()->id();
 
         $registration = Registration::create($validated);
+        $registration->load('patient');
 
         Audit::log(
             action: 'create',
             entityType: 'registration',
             entityId: $registration->id,
-            description: 'Membuat pendaftaran #'.$registration->nomor_antrian.' untuk pasien ID '.$registration->patient_id,
+            description: 'Membuat pendaftaran #'.$registration->nomor_antrian.' untuk '.$registration->patient->nama.' ('.$registration->patient->no_rm.')',
             metadata: [
+                'patient_id' => $registration->patient_id,
+                'patient_name' => $registration->patient->nama,
+                'patient_no_rm' => $registration->patient->no_rm,
+                'nomor_antrian' => $registration->nomor_antrian,
                 'tanggal_kunjungan' => $registration->tanggal_kunjungan?->format('Y-m-d'),
                 'poli' => $registration->poli,
             ]
@@ -99,14 +104,20 @@ class RegistrationController extends Controller
         }
 
         $registration->update($validated);
+        $registration->load('patient');
 
         Audit::log(
             action: 'update',
             entityType: 'registration',
             entityId: $registration->id,
-            description: 'Mengubah pendaftaran #'.$registration->nomor_antrian.' (pasien ID '.$registration->patient_id.')',
+            description: 'Mengubah pendaftaran #'.$registration->nomor_antrian.' untuk '.$registration->patient->nama.' ('.$registration->patient->no_rm.')',
             metadata: [
+                'patient_id' => $registration->patient_id,
+                'patient_name' => $registration->patient->nama,
+                'patient_no_rm' => $registration->patient->no_rm,
+                'nomor_antrian' => $registration->nomor_antrian,
                 'tanggal_kunjungan' => $registration->tanggal_kunjungan?->format('Y-m-d'),
+                'poli' => $registration->poli,
                 'status_antrian' => $registration->status_antrian,
             ]
         );
@@ -119,7 +130,7 @@ class RegistrationController extends Controller
     {
         $id = $registration->id;
         $noAntrian = $registration->nomor_antrian;
-        $patientId = $registration->patient_id;
+        $patient = $registration->patient;
 
         $registration->delete();
 
@@ -127,7 +138,13 @@ class RegistrationController extends Controller
             action: 'delete',
             entityType: 'registration',
             entityId: $id,
-            description: 'Menghapus pendaftaran #'.$noAntrian.' (pasien ID '.$patientId.')',
+            description: 'Menghapus pendaftaran #'.$noAntrian.' untuk '.$patient->nama.' ('.$patient->no_rm.')',
+            metadata: [
+                'patient_id' => $patient->id,
+                'patient_name' => $patient->nama,
+                'patient_no_rm' => $patient->no_rm,
+                'nomor_antrian' => $noAntrian,
+            ]
         );
 
         return redirect()->route('registrations.index')->with('success', 'Data pendaftaran berhasil dihapus.');

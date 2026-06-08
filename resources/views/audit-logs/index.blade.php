@@ -5,19 +5,48 @@
 
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white shadow-sm sm:rounded-lg p-6">
-                <form method="GET" class="mb-4 grid grid-cols-1 md:grid-cols-5 gap-2">
-                    <input type="text" name="q" value="{{ $q }}" placeholder="Cari action/deskripsi/entity" class="border rounded px-3 py-2">
+            <div class="bg-white shadow-sm sm:rounded-lg p-6 space-y-5">
+                <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Riwayat Aktivitas Sistem</h3>
+                        <p class="text-sm text-gray-500 mt-1">Aktivitas pengguna ditampilkan dengan nama data yang mudah dikenali.</p>
+                    </div>
 
-                    <select name="user_id" class="border rounded px-3 py-2">
-                        <option value="">Semua User</option>
-                        @foreach($users as $u)
-                            <option value="{{ $u->id }}" @selected((string)$userId === (string)$u->id)>{{ $u->name }}</option>
-                        @endforeach
-                    </select>
+                    <div class="flex flex-wrap gap-2">
+                        <a href="{{ route('audit-logs.export.csv', request()->query()) }}" class="inline-flex items-center justify-center bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+                            Export CSV
+                        </a>
+                        <a href="{{ route('audit-logs.export.pdf', request()->query()) }}" class="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+                            Export PDF
+                        </a>
+                    </div>
+                </div>
 
-                    <input type="date" name="date_from" value="{{ $dateFrom }}" class="border rounded px-3 py-2" title="Dari tanggal">
-                    <input type="date" name="date_to" value="{{ $dateTo }}" class="border rounded px-3 py-2" title="Sampai tanggal">
+                <form method="GET" class="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Cari</label>
+                        <input type="text" name="q" value="{{ $q }}" placeholder="Aksi, deskripsi, pasien" class="w-full border rounded px-3 py-2">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">User</label>
+                        <select name="user_id" class="w-full border rounded px-3 py-2">
+                            <option value="">Semua User</option>
+                            @foreach($users as $u)
+                                <option value="{{ $u->id }}" @selected((string) $userId === (string) $u->id)>{{ $u->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Dari</label>
+                        <input type="date" name="date_from" value="{{ $dateFrom }}" class="w-full border rounded px-3 py-2">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Sampai</label>
+                        <input type="date" name="date_to" value="{{ $dateTo }}" class="w-full border rounded px-3 py-2">
+                    </div>
 
                     <div class="flex gap-2">
                         <button class="bg-gray-700 text-white px-4 py-2 rounded">Filter</button>
@@ -25,74 +54,58 @@
                     </div>
                 </form>
 
-                <div class="mb-4 flex gap-2">
-                    <a href="{{ route('audit-logs.export.csv', request()->query()) }}" class="inline-block bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
-                        Export CSV
-                    </a>
-                    <a href="{{ route('audit-logs.export.pdf', request()->query()) }}" class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
-                        Export PDF
-                    </a>
+                <div class="border rounded overflow-hidden">
+                    @forelse($logs as $log)
+                        @php
+                            $badgeClass = match($log->action) {
+                                'create' => 'bg-green-100 text-green-800',
+                                'update' => 'bg-yellow-100 text-yellow-800',
+                                'delete' => 'bg-red-100 text-red-800',
+                                default => 'bg-gray-100 text-gray-800',
+                            };
+
+                            $actionLabel = match($log->action) {
+                                'create' => 'Tambah',
+                                'update' => 'Ubah',
+                                'delete' => 'Hapus',
+                                default => ucfirst($log->action),
+                            };
+
+                            $entityBadgeClass = match($log->entity_type) {
+                                'patient' => 'bg-sky-100 text-sky-800',
+                                'registration' => 'bg-violet-100 text-violet-800',
+                                'medical_record' => 'bg-emerald-100 text-emerald-800',
+                                'medical_record_photo' => 'bg-pink-100 text-pink-800',
+                                default => 'bg-gray-100 text-gray-800',
+                            };
+                        @endphp
+
+                        <div class="grid grid-cols-1 md:grid-cols-[150px_1fr] gap-3 p-4 border-b last:border-b-0 hover:bg-gray-50">
+                            <div class="text-sm text-gray-600">
+                                <div class="font-medium text-gray-900">{{ $log->created_at?->format('d-m-Y') }}</div>
+                                <div>{{ $log->created_at?->format('H:i:s') }}</div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="text-xs font-semibold px-2 py-1 rounded {{ $badgeClass }}">{{ $actionLabel }}</span>
+                                    <span class="text-xs font-semibold px-2 py-1 rounded {{ $entityBadgeClass }}">{{ $log->entity_title }}</span>
+                                    <span class="text-sm text-gray-500">oleh {{ $log->user->name ?? 'system' }}</span>
+                                </div>
+
+                                <div class="font-medium text-gray-900">{{ $log->readable_description }}</div>
+
+                                @if($log->entity_subtitle)
+                                    <div class="text-sm text-gray-600">{{ $log->entity_subtitle }}</div>
+                                @endif
+                            </div>
+                        </div>
+                    @empty
+                        <div class="p-6 text-center text-gray-500">Belum ada audit log.</div>
+                    @endforelse
                 </div>
 
-                <div class="overflow-x-auto">
-                    <table class="min-w-full border">
-                        <thead class="bg-gray-100">
-                            <tr>
-                                <th class="border px-3 py-2 text-left">Waktu</th>
-                                <th class="border px-3 py-2 text-left">User</th>
-                                <th class="border px-3 py-2 text-left">Action</th>
-                                <th class="border px-3 py-2 text-left">Entity</th>
-                                <th class="border px-3 py-2 text-left">Deskripsi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($logs as $log)
-                                @php
-                                    $badgeClass = match($log->action) {
-                                        'create' => 'bg-green-100 text-green-800',
-                                        'update' => 'bg-yellow-100 text-yellow-800',
-                                        'delete' => 'bg-red-100 text-red-800',
-                                        default => 'bg-gray-100 text-gray-800',
-                                    };
-
-                                    $entityLabel = match($log->entity_type) {
-                                        'patient' => 'Pasien',
-                                        'registration' => 'Pendaftaran',
-                                        'medical_record' => 'Rekam Medis',
-                                        'medical_record_photo' => 'Foto Rekam Medis',
-                                        default => ucwords(str_replace('_', ' ', (string) $log->entity_type)),
-                                    };
-
-                                    $entityBadgeClass = match($log->entity_type) {
-                                        'patient' => 'bg-sky-100 text-sky-800',
-                                        'registration' => 'bg-violet-100 text-violet-800',
-                                        'medical_record' => 'bg-emerald-100 text-emerald-800',
-                                        'medical_record_photo' => 'bg-pink-100 text-pink-800',
-                                        default => 'bg-gray-100 text-gray-800',
-                                    };
-                                @endphp
-                                <tr>
-                                    <td class="border px-3 py-2">{{ $log->created_at?->format('d-m-Y H:i:s') }}</td>
-                                    <td class="border px-3 py-2">{{ $log->user->name ?? 'system' }}</td>
-                                    <td class="border px-3 py-2">
-                                        <span class="text-xs font-semibold px-2 py-1 rounded {{ $badgeClass }}">{{ strtoupper($log->action) }}</span>
-                                    </td>
-                                    <td class="border px-3 py-2">
-                                        <span class="text-xs font-semibold px-2 py-1 rounded {{ $entityBadgeClass }}">{{ $entityLabel }}</span>
-                                        <span class="text-gray-500 ml-1">ID: {{ $log->entity_id }}</span>
-                                    </td>
-                                    <td class="border px-3 py-2">{{ $log->description }}</td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5" class="border px-3 py-4 text-center">Belum ada audit log.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="mt-4">{{ $logs->links() }}</div>
+                <div>{{ $logs->links() }}</div>
             </div>
         </div>
     </div>

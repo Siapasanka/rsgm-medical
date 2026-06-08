@@ -123,6 +123,10 @@ class PatientController extends Controller
             entityType: 'patient',
             entityId: $patientId,
             description: 'Menghapus data pasien: '.$patientName.' ('.$patientNoRm.')',
+            metadata: [
+                'patient_name' => $patientName,
+                'patient_no_rm' => $patientNoRm,
+            ]
         );
 
         return redirect()->route('patients.index')->with('success', 'Data pasien berhasil dihapus.');
@@ -140,6 +144,6 @@ class PatientController extends Controller
             $lastNumber = (int) $matches[1];
         }
 
-        return 'RM' . str_pad((string) ($lastNumber + 1), 6, '0', STR_PAD_LEFT);
+        return 'RM' . ($lastNumber + 1);
     }
 }

@@ -1,10 +1,10 @@
-<div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-100">
+<div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-100 {{ ($fillHeight ?? false) ? 'h-full flex flex-col' : '' }}">
     <div class="p-4 border-b border-gray-100">
         <h3 class="font-semibold text-gray-800">Antrian Hari Ini</h3>
         <p class="text-xs text-gray-500">Urut berdasarkan nomor antrian</p>
     </div>
 
-    <div class="overflow-x-auto">
+    <div class="overflow-x-auto {{ ($fillHeight ?? false) ? 'flex-1' : '' }}">
         <table class="min-w-full text-sm">
             <thead class="bg-gray-50 text-gray-600">
                 <tr>

@@ -47,7 +47,6 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('role:superadmin,admin')->group(function () {
         Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
-        Route::get('audit-logs/export/csv', [AuditLogController::class, 'exportCsv'])->name('audit-logs.export.csv');
         Route::get('audit-logs/export/pdf', [AuditLogController::class, 'exportPdf'])->name('audit-logs.export.pdf');
 
         Route::get('account-users', [AccountUserController::class, 'index'])->name('account-users.index');

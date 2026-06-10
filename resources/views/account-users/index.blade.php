@@ -33,16 +33,7 @@
                         <x-input-error :messages="$errors->get('password')" class="mt-2" />
                     </div>
 
-                    <div>
-                        <x-input-label for="role" :value="__('Role')" />
-                        <select id="role" name="role" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
-                            <option value="">-- Pilih Role --</option>
-                            @foreach ($manageableRoles as $manageableRole)
-                                <option value="{{ $manageableRole }}" @selected(old('role') === $manageableRole)>{{ ucfirst($manageableRole) }}</option>
-                            @endforeach
-                        </select>
-                        <x-input-error :messages="$errors->get('role')" class="mt-2" />
-                    </div>
+
 
                     <div class="md:col-span-2">
                         <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Simpan Akun</button>
@@ -59,15 +50,7 @@
                         <x-text-input id="q" name="q" type="text" class="mt-1 block w-full" :value="$q" placeholder="Contoh: dr Andi / andi01" />
                     </div>
 
-                    <div>
-                        <x-input-label for="role_filter" :value="__('Role')" />
-                        <select id="role_filter" name="role" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                            <option value="">Semua Role</option>
-                            @foreach ($manageableRoles as $manageableRole)
-                                <option value="{{ $manageableRole }}" @selected($role === $manageableRole)>{{ ucfirst($manageableRole) }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+
 
                     <div class="flex items-end gap-2 mt-6">
                         <button type="submit" class="inline-flex items-center justify-center h-10 border border-blue-700 bg-blue-600 hover:bg-blue-700 text-white px-4 rounded-md text-sm shadow-sm">Filter</button>
@@ -81,7 +64,7 @@
                             <tr>
                                 <th class="px-4 py-2 border">Nama</th>
                                 <th class="px-4 py-2 border">Username</th>
-                                <th class="px-4 py-2 border">Role</th>
+
                                 <th class="px-4 py-2 border">Dibuat Pada</th>
                                 <th class="px-4 py-2 border">Aksi</th>
                             </tr>
@@ -91,8 +74,7 @@
                                 <tr>
                                     <td class="px-4 py-2 border">{{ $user->name }}</td>
                                     <td class="px-4 py-2 border">{{ $user->username }}</td>
-                                    <td class="px-4 py-2 border capitalize">{{ $user->role?->name }}</td>
-                                    <td class="px-4 py-2 border">{{ $user->created_at?->format('d-m-Y H:i') }}</td>
+                                    <td class="px-4 py-2 border">{{ $user->created_at?->format('d/m/Y') }}</td>
                                     <td class="px-4 py-2 border">
                                         <div class="flex items-center gap-1.5 whitespace-nowrap">
                                             <a href="{{ route('account-users.edit', $user) }}" class="inline-flex items-center h-7 bg-yellow-500 hover:bg-yellow-600 text-white px-2.5 rounded text-xs">Edit</a>
@@ -114,7 +96,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td class="px-4 py-3 border text-center" colspan="5">Belum ada akun yang bisa dikelola.</td>
+                                    <td class="px-4 py-3 border text-center" colspan="4">Belum ada akun yang bisa dikelola.</td>
                                 </tr>
                             @endforelse
                         </tbody>

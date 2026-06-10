@@ -13,9 +13,7 @@
                     </div>
 
                     <div class="flex flex-wrap gap-2">
-                        <a href="{{ route('audit-logs.export.csv', request()->query()) }}" class="inline-flex items-center justify-center bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
-                            Export CSV
-                        </a>
+
                         <a href="{{ route('audit-logs.export.pdf', request()->query()) }}" class="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
                             Export PDF
                         </a>
@@ -29,11 +27,11 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">User</label>
-                        <select name="user_id" class="w-full border rounded px-3 py-2">
-                            <option value="">Semua User</option>
-                            @foreach($users as $u)
-                                <option value="{{ $u->id }}" @selected((string) $userId === (string) $u->id)>{{ $u->name }}</option>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Poli</label>
+                        <select name="poli_id" class="w-full border rounded px-3 py-2">
+                            <option value="">Semua Poli</option>
+                            @foreach($polis as $poliOption)
+                                <option value="{{ $poliOption }}" @selected((string) $poli === (string) $poliOption)>{{ $poliOption }}</option>
                             @endforeach
                         </select>
                     </div>

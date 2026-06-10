@@ -10,25 +10,28 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             @include('dashboard.partials.cards')
 
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <div class="lg:col-span-8">
-                    @if($role === 'dokter')
+            @if(in_array($role, ['superadmin', 'admin']))
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+                    <div class="md:col-span-2">
+                        @include('dashboard.partials.queue-table', ['fillHeight' => true])
+                    </div>
+
+                    <div class="flex flex-col gap-6">
+                        @include('dashboard.partials.recent-activities', ['compactActivities' => true])
+                        @include('dashboard.partials.trend-7days', ['compactTrend' => true])
+                    </div>
+                </div>
+            @elseif($role === 'dokter')
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-8">
                         @include('dashboard.partials.doctor-pending')
-                    @else
-                        @include('dashboard.partials.queue-table')
-                    @endif
-                </div>
+                    </div>
 
-                <div class="lg:col-span-4">
-                    @if(in_array($role, ['superadmin', 'admin']))
-                        @include('dashboard.partials.recent-activities')
-                    @elseif($role === 'dokter')
+                    <div class="lg:col-span-4">
                         @include('dashboard.partials.doctor-recent-records')
-                    @endif
+                    </div>
                 </div>
-            </div>
 
-            @if(in_array($role, ['superadmin', 'admin', 'dokter']))
                 @include('dashboard.partials.trend-7days')
             @endif
         </div>

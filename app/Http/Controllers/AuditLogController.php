@@ -7,10 +7,8 @@ use App\Models\MedicalRecord;
 use App\Models\MedicalRecordPhoto;
 use App\Models\Patient;
 use App\Models\Registration;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AuditLogController extends Controller
 {
@@ -24,44 +22,17 @@ class AuditLogController extends Controller
             ->withQueryString();
         $this->decorateLogs($logs->getCollection());
 
-        $users = User::orderBy('name')->get(['id', 'name']);
+        $polis = Registration::query()
+            ->whereNotNull('poli')
+            ->where('poli', '!=', '')
+            ->distinct()
+            ->orderBy('poli')
+            ->pluck('poli');
 
         return view('audit-logs.index', [
             ...$filters,
             'logs' => $logs,
-            'users' => $users,
-        ]);
-    }
-
-    public function exportCsv(Request $request): StreamedResponse
-    {
-        $filters = $this->filters($request);
-
-        $rows = $this->queryWithFilters($filters)
-            ->latest()
-            ->get();
-        $this->decorateLogs($rows);
-
-        $filename = 'audit-logs-' . now()->format('Ymd-His') . '.csv';
-
-        return response()->streamDownload(function () use ($rows) {
-            $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['Waktu', 'User', 'Aksi', 'Entity', 'Keterangan Entity', 'Deskripsi']);
-
-            foreach ($rows as $log) {
-                fputcsv($handle, [
-                    $log->created_at?->format('Y-m-d H:i:s'),
-                    $log->user->name ?? 'system',
-                    $log->action,
-                    $log->entity_title,
-                    $log->entity_subtitle,
-                    $log->readable_description,
-                ]);
-            }
-
-            fclose($handle);
-        }, $filename, [
-            'Content-Type' => 'text/csv',
+            'polis' => $polis,
         ]);
     }
 
@@ -89,7 +60,7 @@ class AuditLogController extends Controller
     {
         return [
             'q' => $request->query('q'),
-            'userId' => $request->query('user_id'),
+            'poli' => $request->query('poli_id'),
             'dateFrom' => $request->query('date_from'),
             'dateTo' => $request->query('date_to'),
         ];
@@ -97,6 +68,19 @@ class AuditLogController extends Controller
 
     private function queryWithFilters(array $filters): Builder
     {
+        $registrationIds = collect();
+        $medicalRecordIds = collect();
+
+        if ($filters['poli']) {
+            $registrationIds = Registration::query()
+                ->where('poli', $filters['poli'])
+                ->pluck('id');
+
+            $medicalRecordIds = MedicalRecord::query()
+                ->whereIn('registration_id', $registrationIds)
+                ->pluck('id');
+        }
+
         return AuditLog::with('user')
             ->when($filters['q'], function ($query) use ($filters) {
                 $q = $filters['q'];
@@ -107,7 +91,26 @@ class AuditLogController extends Controller
                         ->orWhere('metadata', 'like', "%{$q}%");
                 });
             })
-            ->when($filters['userId'], fn ($query) => $query->where('user_id', $filters['userId']))
+            ->when($filters['poli'], function ($query) use ($registrationIds, $medicalRecordIds) {
+                $query->where(function ($sub) use ($registrationIds, $medicalRecordIds) {
+                    $sub->where(function ($registrationQuery) use ($registrationIds) {
+                        $registrationQuery
+                            ->where('entity_type', 'registration')
+                            ->whereIn('entity_id', $registrationIds);
+                    })->orWhere(function ($recordQuery) use ($registrationIds, $medicalRecordIds) {
+                        $recordQuery
+                            ->where('entity_type', 'medical_record')
+                            ->where(function ($inner) use ($registrationIds, $medicalRecordIds) {
+                                $inner->whereIn('entity_id', $medicalRecordIds)
+                                    ->orWhereIn('metadata->registration_id', $registrationIds);
+                            });
+                    })->orWhere(function ($photoQuery) use ($medicalRecordIds) {
+                        $photoQuery
+                            ->where('entity_type', 'medical_record_photo')
+                            ->whereIn('metadata->medical_record_id', $medicalRecordIds);
+                    });
+                });
+            })
             ->when($filters['dateFrom'], fn ($query) => $query->whereDate('created_at', '>=', $filters['dateFrom']))
             ->when($filters['dateTo'], fn ($query) => $query->whereDate('created_at', '<=', $filters['dateTo']));
     }

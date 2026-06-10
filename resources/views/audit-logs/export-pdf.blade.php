@@ -15,21 +15,13 @@
 </head>
 <body>
     <h1>Laporan Audit Log</h1>
-    <div class="meta muted">
-        Dicetak: {{ $printedAt->format('d-m-Y H:i:s') }}<br>
-        Filter: 
-        q={{ $q ?: '-' }},
-        user_id={{ $userId ?: '-' }},
-        dari={{ $dateFrom ?: '-' }},
-        sampai={{ $dateTo ?: '-' }}
-    </div>
+
 
     <table>
         <thead>
             <tr>
                 <th style="width: 15%">Waktu</th>
-                <th style="width: 15%">User</th>
-                <th style="width: 10%">Aksi</th>
+
                 <th style="width: 15%">Entity</th>
                 <th>Deskripsi</th>
             </tr>
@@ -37,9 +29,7 @@
         <tbody>
             @forelse($logs as $log)
                 <tr>
-                    <td>{{ $log->created_at?->format('d-m-Y H:i:s') }}</td>
-                    <td>{{ $log->user->name ?? 'system' }}</td>
-                    <td>{{ strtoupper($log->action) }}</td>
+                    <td>{{ $log->created_at?->format('d/m/Y') }}</td>
                     <td>
                         {{ $log->entity_title }}
                         @if($log->entity_subtitle)
@@ -50,7 +40,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5" style="text-align: center">Tidak ada data audit log.</td>
+                    <td colspan="3" style="text-align: center">Tidak ada data audit log.</td>
                 </tr>
             @endforelse
         </tbody>

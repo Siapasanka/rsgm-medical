@@ -33,8 +33,22 @@
                         <x-input-error :messages="$errors->get('password')" class="mt-2" />
                     </div>
 
-
-
+                    @if(isset($manageableRoles) && in_array('admin', $manageableRoles))
+                        <div>
+                            <x-input-label for="role" :value="__('Role / Peran')" />
+                            <select id="role" name="role" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
+                                <option value="" disabled selected>Pilih Role...</option>
+                                @foreach($manageableRoles as $availableRole)
+                                    <option value="{{ $availableRole }}" {{ old('role') == $availableRole ? 'selected' : '' }}>
+                                        {{ ucfirst($availableRole) }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <x-input-error :messages="$errors->get('role')" class="mt-2" />
+                        </div>
+                    @else
+                        <input type="hidden" name="role" value="dokter">
+                    @endif
                     <div class="md:col-span-2">
                         <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Simpan Akun</button>
                     </div>
@@ -47,10 +61,8 @@
                 <form method="GET" action="{{ route('account-users.index') }}" class="mb-4 grid grid-cols-1 md:grid-cols-4 gap-3">
                     <div class="md:col-span-2">
                         <x-input-label for="q" :value="__('Cari Nama / Username')" />
-                        <x-text-input id="q" name="q" type="text" class="mt-1 block w-full" :value="$q" placeholder="Contoh: dr Andi / andi01" />
+                        <x-text-input id="q" name="q" type="text" class="mt-1 block w-full" :value="$q ?? request('q')" placeholder="Contoh: dr Andi / andi01" />
                     </div>
-
-
 
                     <div class="flex items-end gap-2 mt-6">
                         <button type="submit" class="inline-flex items-center justify-center h-10 border border-blue-700 bg-blue-600 hover:bg-blue-700 text-white px-4 rounded-md text-sm shadow-sm">Filter</button>
@@ -64,7 +76,6 @@
                             <tr>
                                 <th class="px-4 py-2 border">Nama</th>
                                 <th class="px-4 py-2 border">Username</th>
-
                                 <th class="px-4 py-2 border">Dibuat Pada</th>
                                 <th class="px-4 py-2 border">Aksi</th>
                             </tr>
@@ -86,7 +97,7 @@
                                                 <button type="submit" class="inline-flex items-center h-7 bg-gray-600 hover:bg-gray-700 text-white px-2.5 rounded text-xs border border-gray-700">Reset</button>
                                             </form>
 
-                                            <form class="inline-block" method="POST" action="{{ route('account-users.destroy', $user) }}" data-confirm="Yakin hapus akun ini?">
+                                            <form class="inline-block" method="POST" action="{{ route('account-users.destroy', $user) }}" onsubmit="return confirm('Yakin hapus akun ini?');">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="inline-flex items-center h-7 bg-red-600 hover:bg-red-700 text-white px-2.5 rounded text-xs">Hapus</button>

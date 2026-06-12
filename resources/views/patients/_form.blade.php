@@ -45,10 +45,14 @@
         @error('jenis_kelamin') <small class="text-red-600">{{ $message }}</small> @enderror
     </div>
 
-    <div>
-        <label>No HP</label>
-        <input type="text" name="no_hp" value="{{ old('no_hp', $patient->no_hp ?? '') }}" class="w-full border rounded px-3 py-2" required>
-        @error('no_hp') <small class="text-red-600">{{ $message }}</small> @enderror
+   <div>
+    <x-input-label for="no_hp" :value="__('No. HP')" />
+    <x-text-input id="no_hp" name="no_hp" type="text" class="mt-1 block w-full" 
+        :value="old('no_hp', $patient->no_hp ?? '')" 
+        required 
+        maxlength="14" 
+        oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+    <x-input-error :messages="$errors->get('no_hp')" class="mt-2" />
     </div>
 
     <div>
@@ -63,10 +67,12 @@
         @error('alamat') <small class="text-red-600">{{ $message }}</small> @enderror
     </div>
 
-    <div class="md:col-span-2">
-        <label>Alergi</label>
-        <textarea name="alergi" class="w-full border rounded px-3 py-2">{{ old('alergi', $patient->alergi ?? '') }}</textarea>
+    <div>
+    <x-input-label for="alergi" :value="__('Alergi')" />
+    <textarea id="alergi" name="alergi" class="w-full border rounded px-3 py-2" required placeholder="Tulis 'Tidak ada' jika tidak memiliki alergi">{{ old('alergi', $patient->alergi ?? '') }}</textarea>
+    <x-input-error :messages="$errors->get('alergi')" class="mt-2" />
     </div>
+
 </div>
 
 <div style="margin-top:16px; display:flex; align-items:center; gap:12px;">

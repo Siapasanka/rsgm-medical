@@ -42,9 +42,9 @@ class PatientController extends Controller
             'tgl_lahir' => ['required', 'date'],
             'jenis_kelamin' => ['required', Rule::in(['L', 'P'])],
             'alamat' => ['required', 'string'],
-            'no_hp' => ['required', 'string', 'max:20'],
+            'no_hp' => ['required', 'string', 'max:14'], // <-- Diubah menjadi max:14
             'gol_darah' => ['required', 'string', 'max:3'],
-            'alergi' => ['nullable', 'string'],
+            'alergi' => ['required', 'string'], // <-- Diubah menjadi required
         ]);
 
         DB::transaction(function () use ($validated) {
@@ -93,9 +93,9 @@ class PatientController extends Controller
             'tgl_lahir' => ['required', 'date'],
             'jenis_kelamin' => ['required', Rule::in(['L', 'P'])],
             'alamat' => ['required', 'string'],
-            'no_hp' => ['required', 'string', 'max:20'],
+            'no_hp' => ['required', 'string', 'max:14'], // <-- Diubah menjadi max:14
             'gol_darah' => ['required', 'string', 'max:3'],
-            'alergi' => ['nullable', 'string'],
+            'alergi' => ['required', 'string'], // <-- Diubah menjadi required
         ]);
 
         $patient->update($validated);

@@ -22,15 +22,7 @@
                         <x-input-error :messages="$errors->get('username')" class="mt-2" />
                     </div>
 
-                    <div>
-                        <x-input-label for="role" :value="__('Role')" />
-                        <select id="role" name="role" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
-                            @foreach ($manageableRoles as $manageableRole)
-                                <option value="{{ $manageableRole }}" @selected(old('role', $user->role?->name) === $manageableRole)>{{ ucfirst($manageableRole) }}</option>
-                            @endforeach
-                        </select>
-                        <x-input-error :messages="$errors->get('role')" class="mt-2" />
-                    </div>
+
 
                     <div class="flex items-center gap-2">
                         <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Update</button>

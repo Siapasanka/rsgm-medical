@@ -12,9 +12,28 @@ class RegistrationController extends Controller
     public function index(Request $request)
     {
         $tanggal = $request->query('tanggal', now()->toDateString());
+        $q = $request->query('q');
+        $poli = $request->query('poli');
 
-        $registrations = Registration::with(['patient', 'creator'])
-            ->whereDate('tanggal_kunjungan', $tanggal)
+        $registrations = Registration::query()
+            ->with(['patient', 'creator'])
+            ->when($q, function ($query) use ($q) {
+                // Cari berdasarkan Nomor Antrian atau Nama Pasien
+                $query->where(function ($subQuery) use ($q) {
+                    $subQuery->where('nomor_antrian', 'like', "%{$q}%")
+                        ->orWhereHas('patient', function ($patientQuery) use ($q) {
+                            $patientQuery->where('nama', 'like', "%{$q}%");
+                        });
+                });
+            })
+            ->when($poli, function ($query) use ($poli) {
+                // Filter berdasarkan Poli
+                $query->where('poli', $poli);
+            })
+            ->when($tanggal, function ($query) use ($tanggal) {
+                // Filter berdasarkan Tanggal Kunjungan
+                $query->whereDate('tanggal_kunjungan', $tanggal);
+            })
             ->orderBy('nomor_antrian')
             ->paginate(10)
             ->withQueryString();

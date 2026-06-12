@@ -1,101 +1,113 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <title>Laporan Pendaftaran Harian</title>
+    <meta charset="utf-8">
+    <title>Laporan Harian Pendaftaran</title>
     <style>
-        body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #1f2937; }
-        .header { background: #1d4ed8; color: #fff; padding: 14px 16px; border-radius: 8px; }
-        .title { font-size: 18px; font-weight: 700; margin: 0; }
-        .subtitle { font-size: 11px; margin-top: 3px; opacity: .95; }
-        .meta { margin: 12px 0; padding: 10px 12px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; }
-        .cards { margin: 12px 0; }
-        .card { display: inline-block; width: 23%; margin-right: 1%; padding: 8px; border-radius: 8px; color: #fff; text-align: center; }
-        .card b { font-size: 16px; display: block; margin-top: 2px; }
-        .card-total { background: #2563eb; }
-        .card-menunggu { background: #f59e0b; }
-        .card-diperiksa { background: #7c3aed; }
-        .card-selesai { background: #059669; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #cbd5e1; padding: 7px; vertical-align: top; }
-        th { background: #e2e8f0; color: #0f172a; text-align: left; }
-        tr:nth-child(even) td { background: #f8fafc; }
-        .badge { padding: 3px 6px; border-radius: 6px; font-size: 10px; color: #fff; }
-        .b-menunggu { background: #f59e0b; }
-        .b-diperiksa { background: #7c3aed; }
-        .b-selesai { background: #059669; }
-        .footer { margin-top: 10px; font-size: 10px; color: #64748b; text-align: right; }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 12px;
+            color: #000;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+        }
+        .header h2 {
+            margin: 0;
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .header p {
+            margin: 5px 0 0;
+            font-size: 14px;
+        }
+        .summary {
+            margin-bottom: 15px;
+            font-size: 12px;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .data-table th, .data-table td {
+            border: 1px solid #000;
+            padding: 8px 10px;
+            text-align: left;
+            vertical-align: middle;
+        }
+        .data-table th {
+            background-color: #f2f2f2; /* Warna abu-abu tipis agar header terbedakan */
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 11px;
+            text-align: center;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: right;
+            font-size: 10px;
+            color: #333;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
+
     <div class="header">
-        <p class="title">Laporan Pendaftaran Harian</p>
-        <div class="subtitle">RSGM UNDIP</div>
+        <h2>Laporan Harian Pendaftaran Pasien</h2>
+        <p>Tanggal Kunjungan: {{ \Carbon\Carbon::parse($tanggal)->translatedFormat('d F Y') }}</p>
     </div>
 
-    <div class="meta">
-        Tanggal Kunjungan: <b>{{ \Illuminate\Support\Carbon::parse($tanggal)->format('d-m-Y') }}</b><br>
-        Dicetak pada: <b>{{ $printedAt->format('d-m-Y H:i:s') }}</b>
+    <div class="summary">
+        <strong>Ringkasan:</strong> 
+        Total Pasien: {{ $summary['total'] }} &nbsp;|&nbsp; 
+        Menunggu: {{ $summary['menunggu'] }} &nbsp;|&nbsp; 
+        Diperiksa: {{ $summary['diperiksa'] }} &nbsp;|&nbsp; 
+        Selesai: {{ $summary['selesai'] }}
     </div>
 
-    <div class="cards">
-        <div class="card card-total">Total<b>{{ $summary['total'] }}</b></div>
-        <div class="card card-menunggu">Menunggu<b>{{ $summary['menunggu'] }}</b></div>
-        <div class="card card-diperiksa">Diperiksa<b>{{ $summary['diperiksa'] }}</b></div>
-        <div class="card card-selesai">Selesai<b>{{ $summary['selesai'] }}</b></div>
-    </div>
-
-    <table>
+    <table class="data-table">
         <thead>
             <tr>
-                <th>No Antrian</th>
-                <th>Pasien</th>
-                <th>Poli</th>
-                <th>Status</th>
-                <th>Keluhan</th>
-                <th>Dibuat Oleh</th>
+                <th width="5%">No</th>
+                <th width="12%">No Antrian</th>
+                <th width="15%">No RM</th>
+                <th width="30%">Nama Pasien</th>
+                <th width="23%">Poli</th>
+                <th width="15%">Status</th>
             </tr>
         </thead>
         <tbody>
-            @forelse($registrations as $r)
+            @forelse($registrations as $index => $r)
                 <tr>
-                    <td>{{ $r->nomor_antrian }}</td>
+                    <td class="text-center">{{ $index + 1 }}</td>
+                    <td class="text-center font-bold">{{ $r->nomor_antrian }}</td>
+                    <td class="text-center">{{ $r->patient->no_rm ?? '-' }}</td>
                     <td>{{ $r->patient->nama ?? '-' }}</td>
                     <td>{{ $r->poli }}</td>
-                    <td>
-                        @php
-                            $badge = match($r->status_antrian) {
-                                'menunggu' => 'b-menunggu',
-                                'diperiksa' => 'b-diperiksa',
-                                'selesai' => 'b-selesai',
-                                default => 'b-menunggu',
-                            };
-                        @endphp
-                        <span class="badge {{ $badge }}">{{ strtoupper($r->status_antrian) }}</span>
-                    </td>
-                    <td>{{ $r->keluhan_utama ?: '-' }}</td>
-                    <td>{{ $r->creator->name ?? '-' }}</td>
+                    <td class="text-center">{{ ucfirst($r->status_antrian) }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6" style="text-align:center;">Tidak ada data pendaftaran.</td>
+                    <td colspan="6" class="text-center" style="padding: 20px;">
+                        Tidak ada data pendaftaran pasien pada tanggal ini.
+                    </td>
                 </tr>
             @endforelse
         </tbody>
     </table>
 
-    <div class="footer">Dokumen sistem RSGM UNDIP</div>
+    <div class="footer">
+        Dicetak oleh sistem pada: {{ \Carbon\Carbon::parse($printedAt)->format('d/m/Y H:i:s') }}
+    </div>
 
-    <script type="text/php">
-        if (isset($pdf)) {
-            $x = 760;
-            $y = 565;
-            $text = "Halaman {PAGE_NUM}/{PAGE_COUNT}";
-            $font = $fontMetrics->get_font("DejaVu Sans", "normal");
-            $size = 9;
-            $color = [0.39, 0.45, 0.54];
-            $pdf->page_text($x, $y, $text, $font, $size, $color);
-        }
-    </script>
 </body>
 </html>

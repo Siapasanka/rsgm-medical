@@ -22,17 +22,18 @@
                     </div>
                 </div>
             @elseif($role === 'dokter')
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
                     <div class="lg:col-span-8">
                         @include('dashboard.partials.doctor-pending')
                     </div>
 
-                    <div class="lg:col-span-4">
+                    <div class="lg:col-span-4 flex flex-col gap-6">
                         @include('dashboard.partials.doctor-recent-records')
+                        @include('dashboard.partials.trend-7days', ['compactTrend' => true])
                     </div>
                 </div>
 
-                @include('dashboard.partials.trend-7days')
+                
             @endif
         </div>
     </div>

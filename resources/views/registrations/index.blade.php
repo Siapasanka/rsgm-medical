@@ -11,12 +11,12 @@
 
             <div class="bg-white shadow-sm sm:rounded-lg p-6">
                 
-                <div class="flex flex-col xl:flex-row xl:justify-between xl:items-center gap-4 mb-4">
+                <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4 w-full">
                     
                     <form method="GET" action="{{ route('registrations.index') }}" class="flex flex-wrap gap-2 items-center">
-                        <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari Antrian / Nama..." class="border border-gray-300 rounded px-3 py-2 text-sm w-48 focus:border-indigo-500 focus:ring-indigo-500">
+                        <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari Antrian/Nama..." class="border border-gray-300 rounded px-3 py-2 text-sm w-44 focus:border-indigo-500 focus:ring-indigo-500">
                         
-                        <select name="poli" class="border border-gray-300 rounded px-3 py-2 text-sm w-48 focus:border-indigo-500 focus:ring-indigo-500">
+                        <select name="poli" class="border border-gray-300 rounded px-3 py-2 text-sm w-40 focus:border-indigo-500 focus:ring-indigo-500">
                             <option value="">Semua Poli</option>
                             <option value="Poli Gigi Umum" {{ request('poli') == 'Poli Gigi Umum' ? 'selected' : '' }}>Poli Gigi Umum</option>
                             <option value="Poli Bedah Mulut" {{ request('poli') == 'Poli Bedah Mulut' ? 'selected' : '' }}>Poli Bedah Mulut</option>
@@ -31,17 +31,17 @@
                         <input type="date" name="tanggal" value="{{ $tanggal ?? request('tanggal') }}" class="border border-gray-300 rounded px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
                         
                         <div class="flex gap-1">
-                            <button type="submit" class="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded text-sm transition">Filter</button>
-                            <a href="{{ route('registrations.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded text-sm transition">Reset</a>
+                            <button type="submit" class="bg-gray-700 hover:bg-gray-800 text-white px-3 py-2 rounded text-sm transition">Filter</button>
+                            <a href="{{ route('registrations.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-2 rounded text-sm transition">Reset</a>
                         </div>
                     </form>
 
                     <div class="flex gap-2 shrink-0">
-                        <a href="{{ route('registrations.export.daily-pdf', ['tanggal' => $tanggal ?? request('tanggal')]) }}" target="_blank" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm transition">
-                            Print PDF Harian
+                        <a href="{{ route('registrations.export.daily-pdf', ['tanggal' => $tanggal ?? request('tanggal')]) }}" target="_blank" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm transition whitespace-nowrap">
+                            Print PDF
                         </a>
-                        <a href="{{ route('registrations.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm transition">
-                            + Tambah Pendaftaran
+                        <a href="{{ route('registrations.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm transition whitespace-nowrap">
+                            + Tambah
                         </a>
                     </div>
                 </div>

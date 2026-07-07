@@ -9,12 +9,10 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 md:p-10">
                 
-                <!-- Ditambahkan mx-auto di sini agar form presisi di tengah kotak putih -->
                 <form method="POST" action="{{ route('medical-records.store') }}" enctype="multipart/form-data" class="space-y-6 max-w-4xl mx-auto">
                     @csrf
 
-                    <!-- 1. Pendaftaran (Fitur Ketik & Cari menggunakan Alpine.js) -->
-                    <div x-data="registrationSearch({{ $registrations->toJson() ?? '[]' }}, '{{ old('registration_id') }}')" class="relative">
+                    <div x-data="registrationSearch({{ $registrations->toJson() ?? '[]' }}, '{{ old('registration_id', $registrationId ?? '') }}')" class="relative">
                         <div>
                             <x-input-label for="search_registration" :value="__('Pendaftaran')" />
                             
@@ -66,14 +64,12 @@
                         <input type="hidden" name="registration_id" :value="selectedRegistration ? selectedRegistration.id : ''">
                     </div>
 
-                    <!-- 2. Anamnesis -->
                     <div>
                         <x-input-label for="anamnesis" :value="__('Anamnesis')" />
                         <textarea id="anamnesis" name="anamnesis" rows="3" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>{{ old('anamnesis') }}</textarea>
                         <x-input-error :messages="$errors->get('anamnesis')" class="mt-2" />
                     </div>
 
-                    <!-- 3. Pemeriksaan Fisik -->
                     <div>
                         <x-input-label for="pemeriksaan_fisik" :value="__('Pemeriksaan Fisik')" />
                         <textarea id="pemeriksaan_fisik" name="pemeriksaan_fisik" rows="3" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>{{ old('pemeriksaan_fisik') }}</textarea>
@@ -81,28 +77,24 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- 4. Diagnosis -->
                         <div>
                             <x-input-label for="diagnosis" :value="__('Diagnosis')" />
                             <textarea id="diagnosis" name="diagnosis" rows="3" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>{{ old('diagnosis') }}</textarea>
                             <x-input-error :messages="$errors->get('diagnosis')" class="mt-2" />
                         </div>
 
-                        <!-- 5. Tindakan -->
                         <div>
                             <x-input-label for="tindakan" :value="__('Tindakan')" />
                             <textarea id="tindakan" name="tindakan" rows="3" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>{{ old('tindakan') }}</textarea>
                             <x-input-error :messages="$errors->get('tindakan')" class="mt-2" />
                         </div>
 
-                        <!-- 6. Resep (Opsional) -->
                         <div>
                             <x-input-label for="resep" :value="__('Resep (opsional)')" />
                             <textarea id="resep" name="resep" rows="3" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('resep') }}</textarea>
                             <x-input-error :messages="$errors->get('resep')" class="mt-2" />
                         </div>
 
-                        <!-- 7. Catatan (Opsional) -->
                         <div>
                             <x-input-label for="catatan" :value="__('Catatan (opsional)')" />
                             <textarea id="catatan" name="catatan" rows="3" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('catatan') }}</textarea>
@@ -110,17 +102,47 @@
                         </div>
                     </div>
 
-                    <!-- 8. Upload Foto -->
-                    <div>
-                        <x-input-label for="photos" :value="__('Upload Foto (bisa lebih dari 1)')" />
-                        <input type="file" id="photos" name="photos[]" multiple accept=".jpg,.jpeg,.png,.webp" class="mt-1 block w-full text-sm text-gray-500" />
-                        <p class="mt-1 text-xs text-gray-500">Format foto: JPG, JPEG, PNG, WEBP.</p>
+                    <div x-data="photoPreview()">
+                        <x-input-label for="photos" :value="__('Upload Foto (bisa pilih satu per satu atau sekaligus)')" />
+                        
+                        <input 
+                            type="file" 
+                            id="photos" 
+                            name="photos[]" 
+                            multiple 
+                            accept=".jpg,.jpeg,.png,.webp" 
+                            @change="handleFiles($event)"
+                            class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 cursor-pointer" 
+                        />
+                        <p class="mt-1 text-xs text-gray-500">Tips: Kamu bisa klik 'Choose Files' berkali-kali untuk menambahkan foto baru tanpa mereset foto sebelumnya.</p>
                         <x-input-error :messages="$errors->get('photos')" class="mt-2" />
+
+                        <div x-show="previews.length > 0" class="mt-4 p-4 bg-gray-50/80 border border-gray-200 rounded-xl" style="display: none;">
+                            <p class="text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">
+                                Foto Terkumpul (<span x-text="previews.length"></span>)
+                            </p>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                                <template x-for="(image, index) in previews" :key="index">
+                                    <div class="relative bg-white border border-gray-200 rounded-lg p-1.5 shadow-sm group">
+                                        <img :src="image.url" class="w-full h-24 object-cover rounded" :alt="image.name">
+                                        <p class="text-[11px] text-gray-700 mt-1.5 truncate font-medium text-center" x-text="image.name"></p>
+                                        
+                                        <button 
+                                            type="button" 
+                                            @click="removePhoto(index)"
+                                            class="absolute -top-2 -right-2 bg-red-600 hover:bg-red-700 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow transition"
+                                            title="Hapus foto ini"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Tombol Aksi -->
                     <div class="flex items-center gap-4 pt-4">
-                        <button type="submit" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded text-sm shadow-sm transition">
                             Simpan
                         </button>
                         <a href="{{ route('medical-records.index') }}" class="text-sm text-gray-600 hover:text-gray-900">Batal</a>
@@ -167,6 +189,46 @@
                     const patientName = r.patient ? r.patient.nama : '';
                     this.search = r.nomor_antrian + ' - ' + patientName;
                     this.open = false;
+                }
+            }));
+
+            // LOGIKA BARU: AKUMULASI FOTO
+            Alpine.data('photoPreview', () => ({
+                previews: [],
+                filesArray: [],
+                
+                handleFiles(event) {
+                    const newlySelectedFiles = event.target.files;
+                    if (!newlySelectedFiles || newlySelectedFiles.length === 0) return;
+
+                    Array.from(newlySelectedFiles).forEach(newFile => {
+                        // Cek apakah foto dengan nama & ukuran yang persis sama sudah ada di list
+                        const isDuplicate = this.filesArray.some(f => f.name === newFile.name && f.size === newFile.size);
+                        
+                        if (!isDuplicate) {
+                            this.filesArray.push(newFile); // PUSH (Menambahkan, bukan mengganti!)
+                        }
+                    });
+
+                    this.syncDOM();
+                },
+
+                removePhoto(index) {
+                    this.filesArray.splice(index, 1);
+                    this.syncDOM();
+                },
+
+                syncDOM() {
+                    const dt = new DataTransfer();
+                    this.filesArray.forEach(file => dt.items.add(file));
+                    
+                    // Paksa update ingatan tag <input type="file"> dengan seluruh kumpulan foto
+                    document.getElementById('photos').files = dt.files;
+
+                    this.previews = this.filesArray.map(file => ({
+                        url: URL.createObjectURL(file),
+                        name: file.name
+                    }));
                 }
             }));
         });

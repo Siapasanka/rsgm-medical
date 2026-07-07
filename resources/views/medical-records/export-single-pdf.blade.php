@@ -1,102 +1,181 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <title>Ringkasan Rekam Medis</title>
+    <meta charset="utf-8">
+    <title>Rekam Medis - {{ $medicalRecord->registration->patient->nama ?? 'Pasien' }}</title>
     <style>
-        body { font-family: DejaVu Sans, sans-serif; font-size: 12px; color: #1f2937; }
-        .header { background: #7c3aed; color: #fff; padding: 14px 16px; border-radius: 8px; }
-        .title { font-size: 18px; margin: 0; font-weight: 700; }
-        .subtitle { margin-top: 3px; font-size: 11px; }
-        .info { margin-top: 12px; padding: 10px 12px; border: 1px solid #ddd6fe; background: #f5f3ff; border-radius: 8px; }
-        .grid { width: 100%; }
-        .grid td { padding: 3px 0; vertical-align: top; }
-        .label { font-weight: bold; width: 150px; color: #4c1d95; }
-        .section { margin-top: 10px; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
-        .section .head { background: #f3f4f6; padding: 8px 10px; font-weight: bold; color: #111827; }
-        .section .body { padding: 10px; min-height: 34px; }
-        .footer { margin-top: 16px; font-size: 10px; color: #64748b; }
-        .photos { margin-top: 10px; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
-        .photos .head { background: #f3f4f6; padding: 8px 10px; font-weight: bold; color: #111827; }
-        .photos .body { padding: 10px; }
-        .photo-item { width: 100%; margin: 0 0 14px 0; page-break-inside: avoid; text-align: center; }
-        .photo-item img { display: inline-block; max-width: 100%; width: auto; height: auto; max-height: 520px; margin: 0 auto; border: 1px solid #d1d5db; border-radius: 6px; }
-        .photo-caption { font-size: 10px; color: #475569; margin-top: 4px; word-break: break-word; }
-        .empty-photo { color: #6b7280; font-style: italic; }
-        .sign { margin-top: 30px; width: 260px; float: right; text-align: center; }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 12px;
+            color: #000;
+            line-height: 1.4;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+        }
+        .header h2 {
+            margin: 0;
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .header p {
+            margin: 4px 0 0;
+            font-size: 13px;
+        }
+        .info-table, .content-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        .info-table td {
+            padding: 4px 6px;
+            vertical-align: top;
+        }
+        .content-table th, .content-table td {
+            border: 1px solid #000;
+            padding: 8px 10px;
+            vertical-align: top;
+        }
+        .content-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            text-align: left;
+            width: 28%;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+        .section-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin: 15px 0 8px 0;
+            text-transform: uppercase;
+            border-bottom: 1px solid #000;
+            padding-bottom: 3px;
+        }
+        .footer {
+            margin-top: 45px;
+            width: 100%;
+            clear: both;
+        }
+        .ttd-box {
+            float: right;
+            width: 200px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
+
     <div class="header">
-        <p class="title">Ringkasan Rekam Medis</p>
-        <div class="subtitle">RSGM UNDIP</div>
+        <h2>Rumah Sakit Gigi dan Mulut (RSGM)</h2>
+        <p>Laporan Detail Rekam Medis Pasien</p>
     </div>
 
-    <div class="info">
-        <table class="grid">
-            <tr><td class="label">Dicetak</td><td>: {{ $printedAt->format('d-m-Y H:i:s') }}</td></tr>
-            <tr><td class="label">Tanggal Kunjungan</td><td>: {{ $medicalRecord->registration->tanggal_kunjungan?->format('d-m-Y') }}</td></tr>
-            <tr><td class="label">No Antrian</td><td>: {{ $medicalRecord->registration->nomor_antrian }}</td></tr>
-            <tr><td class="label">Pasien</td><td>: {{ $medicalRecord->registration->patient->nama ?? '-' }}</td></tr>
-            <tr><td class="label">Dokter</td><td>: {{ $medicalRecord->doctor->name ?? '-' }}</td></tr>
-            <tr><td class="label">Jumlah Foto Klinis</td><td>: {{ $medicalRecord->photos->count() }}</td></tr>
-        </table>
-    </div>
+    <table class="info-table">
+        <tr>
+            <td width="15%"><strong>No. RM</strong></td>
+            <td width="35%">: {{ $medicalRecord->registration->patient->no_rm ?? '-' }}</td>
+            <td width="15%"><strong>Dokter</strong></td>
+            <td width="35%">: {{ $medicalRecord->doctor->name ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td><strong>Nama Pasien</strong></td>
+            <td>: {{ $medicalRecord->registration->patient->nama ?? '-' }}</td>
+            <td><strong>Poli Tujuan</strong></td>
+            <td>: {{ $medicalRecord->registration->poli ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td><strong>Tanggal Lahir</strong></td>
+            <td>: {{ $medicalRecord->registration->patient->tgl_lahir ? \Carbon\Carbon::parse($medicalRecord->registration->patient->tgl_lahir)->format('d-m-Y') : '-' }}</td>
+            <td><strong>Tgl Kunjungan</strong></td>
+            <td>: {{ $medicalRecord->created_at->format('d-m-Y H:i') }}</td>
+        </tr>
+    </table>
 
-    <div class="section"><div class="head">Anamnesis</div><div class="body">{{ $medicalRecord->anamnesis ?: '-' }}</div></div>
-    <div class="section"><div class="head">Pemeriksaan Fisik</div><div class="body">{{ $medicalRecord->pemeriksaan_fisik ?: '-' }}</div></div>
-    <div class="section"><div class="head">Diagnosis</div><div class="body">{{ $medicalRecord->diagnosis ?: '-' }}</div></div>
-    <div class="section"><div class="head">Tindakan</div><div class="body">{{ $medicalRecord->tindakan ?: '-' }}</div></div>
-    <div class="section"><div class="head">Resep</div><div class="body">{{ $medicalRecord->resep ?: '-' }}</div></div>
-    <div class="section"><div class="head">Catatan</div><div class="body">{{ $medicalRecord->catatan ?: '-' }}</div></div>
+    <div class="section-title">Hasil Pemeriksaan Klinis</div>
 
-    <div class="photos">
-        <div class="head">Foto Klinis</div>
-        <div class="body">
-            @forelse($medicalRecord->photos as $photo)
+    <table class="content-table">
+        <tr>
+            <th>Anamnesis</th>
+            <td>{!! nl2br(e($medicalRecord->anamnesis ?? '-')) !!}</td>
+        </tr>
+        <tr>
+            <th>Pemeriksaan Fisik</th>
+            <td>{!! nl2br(e($medicalRecord->pemeriksaan_fisik ?? '-')) !!}</td>
+        </tr>
+        <tr>
+            <th>Diagnosis</th>
+            <td>{!! nl2br(e($medicalRecord->diagnosis ?? '-')) !!}</td>
+        </tr>
+        <tr>
+            <th>Tindakan</th>
+            <td>{!! nl2br(e($medicalRecord->tindakan ?? '-')) !!}</td>
+        </tr>
+        @if(!empty($medicalRecord->resep))
+        <tr>
+            <th>Resep Obat</th>
+            <td>{!! nl2br(e($medicalRecord->resep)) !!}</td>
+        </tr>
+        @endif
+        @if(!empty($medicalRecord->catatan))
+        <tr>
+            <th>Catatan Tambahan</th>
+            <td>{!! nl2br(e($medicalRecord->catatan)) !!}</td>
+        </tr>
+        @endif
+    </table>
+
+    @if($medicalRecord->photos && $medicalRecord->photos->count() > 0)
+        <table style="width: 100%; margin-top: 25px; border-collapse: collapse;">
+            <tr>
+                <td style="font-size: 14px; font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #000; padding-bottom: 5px;">
+                    Lampiran Foto Klinis
+                </td>
+            </tr>
+            @foreach($medicalRecord->photos as $photo)
                 @php
-                    $filePath = storage_path('app/public/' . $photo->file_path);
-                    $imageData = null;
+                    $cleanPath = ltrim(str_replace(['public/', 'storage/'], '', $photo->file_path), '/');
+                    
+                    $p1 = public_path('storage/' . $cleanPath);
+                    $p2 = storage_path('app/public/' . $cleanPath);
+                    $p3 = public_path($cleanPath);
 
-                    if (is_file($filePath)) {
-                        $mime = $photo->mime_type ?: 'image/jpeg';
-                        $imageData = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($filePath));
-                    }
+                    $targetFile = null;
+                    if (file_exists($p1)) { $targetFile = $p1; }
+                    elseif (file_exists($p2)) { $targetFile = $p2; }
+                    elseif (file_exists($p3)) { $targetFile = $p3; }
                 @endphp
 
-                <div class="photo-item">
-                    @if($imageData)
-                        <img src="{{ $imageData }}" alt="{{ $photo->file_name }}">
-                    @else
-                        <div class="empty-photo">File foto tidak ditemukan: {{ $photo->file_name }}</div>
-                    @endif
-                    <div class="photo-caption">{{ $photo->file_name }}</div>
-                </div>
-            @empty
-                <div class="empty-photo">Tidak ada foto klinis.</div>
-            @endforelse
+                @if($targetFile)
+                    @php
+                        $ext = pathinfo($targetFile, PATHINFO_EXTENSION);
+                        $data = file_get_contents($targetFile);
+                        $base64 = 'data:image/' . $ext . ';base64,' . base64_encode($data);
+                    @endphp
+                    <tr>
+                        <td style="padding-top: 20px; padding-bottom: 15px; text-align: center;">
+                            <img src="{{ $base64 }}" style="max-width: 450px; max-height: 500px; border: 1px solid #444; padding: 4px; background-color: #fff;">
+                            <div style="font-size: 11px; color: #555; margin-top: 6px; font-style: italic;">
+                                {{ $photo->file_name }}
+                            </div>
+                        </td>
+                    </tr>
+                @endif
+            @endforeach
+        </table>
+    @endif
+
+    <div class="footer">
+        <div class="ttd-box">
+            <p>Semarang, {{ now()->translatedFormat('d F Y') }}<br>Dokter Pemeriksa,</p>
+            <br><br><br>
+            <p><strong><u>{{ $medicalRecord->doctor->name ?? '.......................' }}</u></strong></p>
         </div>
     </div>
 
-    <div class="sign">
-        Semarang, {{ $printedAt->format('d-m-Y') }}<br>
-        Dokter Pemeriksa,<br><br><br><br>
-        <b>{{ $medicalRecord->doctor->name ?? '(............................)' }}</b>
-    </div>
-
-    <div style="clear: both"></div>
-    <div class="footer">Dokumen sistem RSGM UNDIP</div>
-
-    <script type="text/php">
-        if (isset($pdf)) {
-            $x = 450;
-            $y = 810;
-            $text = "Halaman {PAGE_NUM}/{PAGE_COUNT}";
-            $font = $fontMetrics->get_font("DejaVu Sans", "normal");
-            $size = 9;
-            $color = [0.39, 0.45, 0.54];
-            $pdf->page_text($x, $y, $text, $font, $size, $color);
-        }
-    </script>
 </body>
 </html>

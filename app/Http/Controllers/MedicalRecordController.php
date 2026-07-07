@@ -38,7 +38,7 @@ class MedicalRecordController extends Controller
         $filters = [
             'q' => $request->query('q'),
             'action' => $request->query('action'),
-            'userId' => $request->query('user_id'),
+            'user' => $request->query('user'), // <-- DIUBAH: Menangkap ketikan teks pencarian user
             'dateFrom' => $request->query('date_from'),
             'dateTo' => $request->query('date_to'),
             'recordId' => $request->query('record_id'),
@@ -46,7 +46,7 @@ class MedicalRecordController extends Controller
 
         $logs = AuditLog::with('user')
             ->where('entity_type', 'medical_record')
-            ->whereIn('action', ['create', 'update'])
+            // FIX 1: Pembatasan whereIn('action') dihapus agar log Hapus Foto & Hapus RM ikut muncul!
             ->when($filters['recordId'], fn ($query) => $query->where('entity_id', $filters['recordId']))
             ->when($filters['q'], function ($query) use ($filters) {
                 $q = $filters['q'];
@@ -60,7 +60,10 @@ class MedicalRecordController extends Controller
                 });
             })
             ->when($filters['action'], fn ($query) => $query->where('action', $filters['action']))
-            ->when($filters['userId'], fn ($query) => $query->where('user_id', $filters['userId']))
+            ->when($filters['user'], function ($query, $userName) {
+                // FIX 2: Filter pencarian berdasarkan ketikan nama User/Dokter
+                $query->whereHas('user', fn ($q) => $q->where('name', 'like', "%{$userName}%"));
+            })
             ->when($filters['dateFrom'], fn ($query) => $query->whereDate('created_at', '>=', $filters['dateFrom']))
             ->when($filters['dateTo'], fn ($query) => $query->whereDate('created_at', '<=', $filters['dateTo']))
             ->latest()
@@ -77,13 +80,10 @@ class MedicalRecordController extends Controller
             ->get()
             ->keyBy('id');
 
-        $users = User::orderBy('name')->get(['id', 'name']);
-
         return view('medical-records.logs', [
             ...$filters,
             'logs' => $logs,
             'recordsById' => $recordsById,
-            'users' => $users,
         ]);
     }
 
@@ -126,7 +126,7 @@ class MedicalRecordController extends Controller
 
             if ($request->hasFile('photos')) {
                 foreach ($request->file('photos') as $photo) {
-                    $path = $photo->store('medical-records', 'public');
+                    $path = Storage::disk('public')->putFile('medical-records', $photo);
 
                     $record->photos()->create([
                         'file_path' => $path,
@@ -142,6 +142,7 @@ class MedicalRecordController extends Controller
 
             return $record;
         });
+        
         $record->load('registration.patient');
 
         Audit::log(
@@ -187,9 +188,6 @@ class MedicalRecordController extends Controller
             'catatan' => ['nullable', 'string'],
             'photos' => ['nullable', 'array'],
             'photos.*' => ['image', 'mimes:jpg,jpeg,png,webp'],
-        ], [
-            'photos.*.mimes' => 'Format foto harus JPG, JPEG, PNG, atau WEBP.',
-            'photos.*.image' => 'File yang diupload harus berupa gambar.',
         ]);
 
         $recordData = collect($validated)->except(['photos'])->toArray();
@@ -208,7 +206,7 @@ class MedicalRecordController extends Controller
 
             if ($request->hasFile('photos')) {
                 foreach ($request->file('photos') as $photo) {
-                    $path = $photo->store('medical-records', 'public');
+                    $path = Storage::disk('public')->putFile('medical-records', $photo);
 
                     $medicalRecord->photos()->create([
                         'file_path' => $path,
@@ -220,6 +218,7 @@ class MedicalRecordController extends Controller
                 }
             }
         });
+        
         $medicalRecord->load('registration.patient');
 
         Audit::log(
@@ -286,17 +285,17 @@ class MedicalRecordController extends Controller
         Storage::disk('public')->delete($photo->file_path);
         $photo->delete();
 
+        // FIX 3: Diikat langsung ke entity 'medical_record' dengan aksi 'update'
         Audit::log(
-            action: 'delete',
-            entityType: 'medical_record_photo',
-            entityId: $photoId,
-            description: 'Menghapus foto rekam medis '.$fileName.' untuk '.$medicalRecord->registration->patient->nama.' ('.$medicalRecord->registration->patient->no_rm.')',
+            action: 'update',
+            entityType: 'medical_record',
+            entityId: $medicalRecord->id,
+            description: 'Menghapus foto klinis ('.$fileName.') dari rekam medis pasien '.$medicalRecord->registration->patient->nama,
             metadata: [
-                'medical_record_id' => $medicalRecord->id,
-                'patient_id' => $medicalRecord->registration->patient_id,
+                'event' => 'hapus_foto',
+                'file_name' => $fileName,
                 'patient_name' => $medicalRecord->registration->patient->nama,
                 'patient_no_rm' => $medicalRecord->registration->patient->no_rm,
-                'file_name' => $fileName,
             ]
         );
 
